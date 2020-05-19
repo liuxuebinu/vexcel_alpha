@@ -1,7 +1,11 @@
 package org.vexcel.tools;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,7 +23,7 @@ import org.vexcel.pojo.ValidateRule;
 public class XmlUtils {
     public static final String validateXmlName = "excelValidation.xml";
     public static final String xmlPathInJar = "/resources/excelValidation.xml";
-    public static final String xmlPathOutJar = "/excelValidation.xml";
+    public static final String xmlPathOutJar = "./bin/excelValidation.xml";
 
     public static boolean isNull(String param) {
         if (param == null)
@@ -176,9 +180,14 @@ public class XmlUtils {
         InputStream inStream = null;
         String[] paths = { xmlPathInJar, xmlPathOutJar };
         HashMap<String, ExcelConfig> excelConfigs = new HashMap<String, ExcelConfig>();
+        int count = 0;
         for (String xmlPath : paths) {
+        	count++;
             try {
-                inStream = this.getClass().getResourceAsStream(xmlPath);
+            	if (count==1)
+            		inStream = this.getClass().getResourceAsStream(xmlPath);
+            	else
+            		inStream = new FileInputStream(new File(xmlPath));
                 SAXReader reader = new SAXReader();
                 Document document = null;
                 document = reader.read(inStream);
@@ -193,6 +202,9 @@ public class XmlUtils {
                     // validatorAndPath.put(e1.attributeValue("type"), xmlPath);
                 }
             } catch (Exception e) {
+            	StringWriter a = new StringWriter();
+            	e.printStackTrace(new PrintWriter(a));
+            	ExcelUtils.log.error(a.toString());
                 continue;
             } finally {
                 if (inStream != null)

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <validators>
+  <!-- 
  <validator id="white" type="xls">
    <sheet sheetIndex="0" beginRow="1" endRow="10000">
  	<column rowIndex="1" name="客户姓名" isNullAble="false"  maxLength="10" classType="java.lang.String" />
@@ -19,7 +20,7 @@
 	</uniqueKeys>
    </sheet>
   </validator>
-  
+ -->
   
   
   

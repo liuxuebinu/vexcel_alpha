@@ -2,13 +2,22 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org</groupId>
   <artifactId>vexcel</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>alpha-1.17</version>
+   <properties>
+        <!-- 项目配置文件目录 -->
+        <project.config.directory>src/main/resources</project.config.directory>
+        <!-- 项目编码 -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- 本地编译JDK版本 -->
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <!-- 项目部署JDK版本 -->
+        <maven.compiler.target>1.8</maven.compiler.target>
+    </properties>
+
   
-  <!-- https://mvnrepository.com/artifact/dom4j/dom4j -->
  <dependencies>
-	<!-- https://mvnrepository.com/artifact/dom4j/dom4j -->
- 
-<!-- https://mvnrepository.com/artifact/org.apache.poi/poi -->
+ <!-- https://mvnrepository.com/artifact/org.apache.poi/poi -->
 <dependency>
 	<groupId>org.apache.poi</groupId> 
     <artifactId>poi-ooxml</artifactId>
@@ -34,8 +43,70 @@
     
 </dependency>
 
-
-
-
  </dependencies>
-</project>
+    <build>
+      <resources>    
+            <resource>    
+                <!-- 设定主资源目录  -->    
+                <directory>src/main/resources</directory>    
+ 
+                <!-- maven default生命周期，process-resources阶段执行maven-resources-plugin插件的resources目标处理主资源目下的资源文件时，只处理如下配置中包含的资源类型 -->     
+				 <includes>
+					  <include>**/*</include>
+				 </includes>  
+
+                <!-- maven default生命周期，process-resources阶段执行maven-resources-plugin插件的resources目标处理主资源目下的资源文件时，指定处理后的资源文件输出目录，默认是${build.outputDirectory}指定的目录-->      
+                <targetPath>resources</targetPath>     
+   
+                <!-- maven default生命周期，process-resources阶段执行maven-resources-plugin插件的resources目标处理主资源目下的资源文件时，是否对主资源目录开启资源过滤 -->    
+                <filtering>true</filtering>     
+            </resource>  			
+        </resources> 
+
+    <plugins>
+  <plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-jar-plugin</artifactId>
+    <version>2.4</version>
+    <!-- 对要打的jar包进行配置 -->
+    <configuration>
+        <!-- Configuration of the archiver -->
+        <archive>
+            <!--生成的jar中，不要包含pom.xml和pom.properties这两个文件-->
+            <addMavenDescriptor>false</addMavenDescriptor>
+			<manifest>
+                <!--是否要把第三方jar放到manifest的classpath中-->
+                <addClasspath>true</addClasspath>
+                <mainClass>org.vexcel.gui.MainLogistic</mainClass>
+                <!--生成的manifest中classpath的前缀,所以classpath的前缀是lib/-->
+                <classpathPrefix>vexcel_lib</classpathPrefix>
+            </manifest>
+        </archive>
+    </configuration>
+</plugin>
+        <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.4</version>
+                <!-- 对项目的组装进行配置 -->
+                <configuration>
+                    <!-- 指定assembly插件的配置文件所在位置 -->
+                    <descriptors>
+                        <descriptor>src/main/resources/package.xml</descriptor>
+                    </descriptors>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <!-- 将组装绑定到maven生命周期的哪一阶段 -->
+                        <phase>package</phase>
+                        <goals>
+                            <!-- 指定assembly插件的打包方式-->
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+</plugins>
+</build>
+ </project>
