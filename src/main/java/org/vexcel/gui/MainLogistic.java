@@ -34,7 +34,7 @@ public class MainLogistic {
             e.printStackTrace();
         }
         // new MainLogistic().setLog();
-        new MainLogistic().setLog2();
+         new MainLogistic().setLog2();
 
         HashMap<String, ExcelConfig> paths = new XmlUtils().getAllValidators();
         new Thread(new SelectFrame(paths)).start();

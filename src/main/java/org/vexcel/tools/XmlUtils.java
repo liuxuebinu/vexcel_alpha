@@ -204,7 +204,7 @@ public class XmlUtils {
             } catch (Exception e) {
             	StringWriter a = new StringWriter();
             	e.printStackTrace(new PrintWriter(a));
-            	ExcelUtils.log.error(a.toString());
+            //	ExcelUtils.log.error(a.toString());
                 continue;
             } finally {
                 if (inStream != null)
