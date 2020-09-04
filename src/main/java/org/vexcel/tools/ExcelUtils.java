@@ -218,7 +218,6 @@ public class ExcelUtils {
             }
 
             InputStream is = null;
-
             BigDecimal b = BigDecimal.ZERO;
             b.setScale(4);
             try {
@@ -256,7 +255,6 @@ public class ExcelUtils {
             try {
 
                 for (int rowNum = sheet.getBeginRow(); rowNum <= hssfsheet.getLastRowNum(); rowNum++) {
-
                     XSSFRow hssfRow = hssfsheet.getRow(rowNum);
 
                     for (Object key : rowKeys) {

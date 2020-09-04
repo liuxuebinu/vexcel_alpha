@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <validators>
- <!-- 
- <validator id="white" type="xls">
+<!--
+ <validator id="white" type="xlsx">
    <sheet sheetIndex="0" beginRow="1" endRow="10000">
  	<column rowIndex="1" name="客户姓名" isNullAble="false"  maxLength="10" classType="java.lang.String" />
 	<column rowIndex="2" name="证件类型"  isNullAble="false" classType="java.lang.String" />
@@ -19,10 +19,10 @@
 	<uniqueKey keyId="Check_idtfno" uniqueFields="2,3"/>
 	</uniqueKeys>
    </sheet>
-   
+
   </validator>
+
    -->
-  
   
   
   
@@ -36,7 +36,7 @@
    							java.lang.Float,java.util.Date]
    classType:java.lang.Integer allow attributes      [minLength maxLength isNullAble rule]
    classType:java.lang.Long    allow attributes      [minLength maxLength isNullAble rule]
-   classType:java.lang.String  allow  attributes     [minLength maxLength isNullAble rule]
+   classType:java.lang.String  allow  attributes     [minLength maxLength isNullAble rule checkSpecChar]
    classType:java.math.BigDecimal  allow  attributes [ isNullAble rule  maxIntLength minIntLength minScaleLength maxScaleLength]
    classType:java.lang.Double  allow  attributes     [ isNullAble rule  maxIntLength minIntLength minScaleLength maxScaleLength]
    classType:java.lang.Float  allow  attributes      [ isNullAble rule  maxIntLength minIntLength minScaleLength maxScaleLength]

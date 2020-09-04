@@ -1,12 +1,8 @@
 package org.vexcel.tools;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.io.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -22,7 +18,7 @@ import org.vexcel.pojo.ValidateRule;
 
 public class XmlUtils {
     public static final String validateXmlName = "excelValidation.xml";
-    public static final String xmlPathInJar = "/resources/excelValidation.xml";
+  //  public static final String xmlPathInJar = "/resources/excelValidation.xml";
     public static final String xmlPathOutJar = "./bin/excelValidation.xml";
 
     public static boolean isNull(String param) {
@@ -36,8 +32,17 @@ public class XmlUtils {
 
     @SuppressWarnings("unchecked")
     public List<VSheet> getRuleByName(String xmlPath, String validatorName) {
+        InputStream inStream = null;
+        try {
+            if (xmlPathOutJar.equals(xmlPath)) {
+                inStream = new FileInputStream(new File(xmlPath));
+            } else {
+                inStream = this.getClass().getResourceAsStream(xmlPath);
+            }
+        }catch(Exception e){
+            ExcelUtils.log.error("程序出错，读取配置失败："+xmlPath);
+        }
 
-        InputStream inStream = this.getClass().getResourceAsStream(xmlPath);
         SAXReader reader = new SAXReader();
         Document document = null;
         List<VSheet> jsheets = new ArrayList<VSheet>();
@@ -76,6 +81,7 @@ public class XmlUtils {
         } catch (DocumentException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
+            ExcelUtils.log.error("程序出错，读取配置失败："+xmlPath);
         } finally {
             if (inStream != null) {
                 try {
@@ -178,7 +184,7 @@ public class XmlUtils {
 
     public HashMap<String, ExcelConfig> getAllValidators() {
         InputStream inStream = null;
-        String[] paths = { xmlPathInJar, xmlPathOutJar };
+        String[] paths = { xmlPathOutJar };
         HashMap<String, ExcelConfig> excelConfigs = new HashMap<String, ExcelConfig>();
         int count = 0;
         for (String xmlPath : paths) {
