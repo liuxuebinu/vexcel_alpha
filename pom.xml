@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org</groupId>
   <artifactId>vexcel</artifactId>
-  <version>alpha-1.17</version>
+  <version>server-1.10</version>
    <properties>
         <!-- 项目配置文件目录 -->
         <project.config.directory>src/main/resources</project.config.directory>
@@ -74,39 +74,11 @@
         <archive>
             <!--生成的jar中，不要包含pom.xml和pom.properties这两个文件-->
             <addMavenDescriptor>false</addMavenDescriptor>
-			<manifest>
-                <!--是否要把第三方jar放到manifest的classpath中-->
-                <addClasspath>true</addClasspath>
-                <mainClass>org.vexcel.gui.MainLogistic</mainClass>
-                <!--生成的manifest中classpath的前缀,所以classpath的前缀是lib/-->
-                <classpathPrefix>vexcel_lib</classpathPrefix>
-            </manifest>
+
         </archive>
     </configuration>
 </plugin>
-        <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>2.4</version>
-                <!-- 对项目的组装进行配置 -->
-                <configuration>
-                    <!-- 指定assembly插件的配置文件所在位置 -->
-                    <descriptors>
-                        <descriptor>src/main/resources/package.xml</descriptor>
-                    </descriptors>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>make-assembly</id>
-                        <!-- 将组装绑定到maven生命周期的哪一阶段 -->
-                        <phase>package</phase>
-                        <goals>
-                            <!-- 指定assembly插件的打包方式-->
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+
 </plugins>
 </build>
  </project>

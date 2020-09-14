@@ -17,9 +17,7 @@ import org.vexcel.pojo.VSheet;
 import org.vexcel.pojo.ValidateRule;
 
 public class XmlUtils {
-    public static final String validateXmlName = "excelValidation.xml";
-  //  public static final String xmlPathInJar = "/resources/excelValidation.xml";
-    public static final String xmlPathOutJar = "./bin/excelValidation.xml";
+
 
     public static boolean isNull(String param) {
         if (param == null)
@@ -31,18 +29,8 @@ public class XmlUtils {
     }
 
     @SuppressWarnings("unchecked")
-    public List<VSheet> getRuleByName(String xmlPath, String validatorName) {
-        InputStream inStream = null;
-        try {
-            if (xmlPathOutJar.equals(xmlPath)) {
-                inStream = new FileInputStream(new File(xmlPath));
-            } else {
-                inStream = this.getClass().getResourceAsStream(xmlPath);
-            }
-        }catch(Exception e){
-            ExcelUtils.log.error("程序出错，读取配置失败："+xmlPath);
-        }
-
+    public List<VSheet> getRuleByName( String validatorName) {
+        InputStream inStream = this.getClass().getResourceAsStream("/excelValidation.xml");
         SAXReader reader = new SAXReader();
         Document document = null;
         List<VSheet> jsheets = new ArrayList<VSheet>();
@@ -81,7 +69,7 @@ public class XmlUtils {
         } catch (DocumentException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            ExcelUtils.log.error("程序出错，读取配置失败："+xmlPath);
+            throw new ValidateXmlException("读取xml配置失败");
         } finally {
             if (inStream != null) {
                 try {
@@ -93,7 +81,28 @@ public class XmlUtils {
             }
 
         }
-        return jsheets;
+
+    }
+
+    public String getTypeById( String validatorId) {
+        InputStream inStream = this.getClass().getResourceAsStream("/excelValidation.xml");
+        SAXReader reader = new SAXReader();
+        Document document = null;
+        String type = "";
+        try {
+            document = reader.read(inStream);
+            Element rootE = document.getRootElement();
+            List<Element> validators = rootE.elements("validator");
+            Element validateElement = null;
+            for (Element e1 : validators) {
+                if (validatorId.equals(e1.attributeValue("id"))) {
+                    type= e1.attributeValue("id");
+                }
+            }
+        }catch (Exception e){
+            throw new ValidateXmlException("读取xml配置失败");
+        }
+        return type ;
 
     }
 
@@ -181,7 +190,7 @@ public class XmlUtils {
         }
         return columnRules;
     }
-
+/*
     public HashMap<String, ExcelConfig> getAllValidators() {
         InputStream inStream = null;
         String[] paths = { xmlPathOutJar };
@@ -225,5 +234,5 @@ public class XmlUtils {
         return excelConfigs;
 
     }
-
+*/
 }

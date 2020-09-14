@@ -9,6 +9,8 @@ public class VSheet {
     Integer beginRow;
     // 该sheet最大数据行
     Integer endRow;
+
+    String excelType ;
     // 每列的校验规则
     private List<ValidateRule> columns;
     // 唯一性约束键

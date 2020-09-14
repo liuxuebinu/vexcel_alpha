@@ -23,13 +23,10 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.vexcel.engine.RuleEngine;
 import org.vexcel.exception.ValidateRuntimeException;
-import org.vexcel.pojo.Message;
-import org.vexcel.pojo.UniqueKey;
-import org.vexcel.pojo.VSheet;
-import org.vexcel.pojo.ValidateRule;
+import org.vexcel.exception.ValidateXmlException;
+import org.vexcel.pojo.*;
 
 public class ExcelUtils {
-    public static Logger log = Logger.getLogger(ExcelUtils.class);
 
     private static String getCellText(org.apache.poi.ss.usermodel.Cell cell) {
         String celltext = "";
@@ -57,21 +54,24 @@ public class ExcelUtils {
 
     }
 
-    public static Boolean readExcel(String excelLocalPath, List<VSheet> rules, JTextArea fileLabel, Message message,
-            String excelType) {
+    public static ValidateResult readExcel(InputStream is,List<VSheet> rules,
+                                           String excelType) {
         if ("xls".equals(excelType)) {
-            return readExcel_XLS(excelLocalPath, rules, fileLabel, message, excelType);
+            return readExcel_XLS(is, rules,excelType);
         } else {
-            return readExcel_XLSX(excelLocalPath, rules, fileLabel, message, excelType);
+            return readExcel_XLSX(is, rules,excelType);
         }
 
     }
 
-    public static Boolean readExcel_XLS(String excelLocalPath, List<VSheet> rules, JTextArea fileLabel, Message message,
+    public static ValidateResult readExcel_XLS(InputStream is, List<VSheet> rules,
             String excelType) {
         Integer excelCounts = 0;
         int count = 0;
-        boolean excelRight = true;
+        ValidateResult result = new ValidateResult();
+        result.setSuccess(true);
+        StringBuilder msgs = new StringBuilder();
+        result.setErrorMsg(msgs);
         for (VSheet sheet : rules) {
             List<ValidateRule> coumnRules = sheet.getColumns();
             HashMap<Integer, ValidateRule> coumnRules_Map = new HashMap<Integer, ValidateRule>();
@@ -82,29 +82,13 @@ public class ExcelUtils {
                 coumnRules_Map.put(new Integer(columnRow.getColumnIndex()), columnRow);
             }
 
-            InputStream is = null;
 
-            BigDecimal b = BigDecimal.ZERO;
-            b.setScale(4);
-            try {
-                is = new FileInputStream(excelLocalPath);
-            } catch (FileNotFoundException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-                excelRight = false;
-                log.error("解析excel失败，未找到目标文件");
-                log.error(e);
-                throw new ValidateRuntimeException(e.toString());
-            }
             HSSFWorkbook hssfworkbook = null;
             try {
                 hssfworkbook = new HSSFWorkbook(is);
             } catch (IOException e) {
                 // TODO Auto-generated catch block
-                e.printStackTrace();
-                excelRight = false;
-                log.error("解析工作表失败");
-                log.error(e);
+                result.setSuccess(false);
                 throw new ValidateRuntimeException(e.toString());
             }
             HSSFSheet hssfsheet = hssfworkbook.getSheetAt(sheet.getSheetIndex());
@@ -114,8 +98,9 @@ public class ExcelUtils {
 
             int endRow = sheet.getEndRow();
             if (sheet.getEndRow() != null && hssfsheet.getLastRowNum() > endRow) {
-                excelRight = false;
-                log.error("解析工作表失败:表格sheet数据不能超过" + sheet.getEndRow() + "条");
+                result.setSuccess(false);
+                result.getErrorMsg().append("解析工作表失败:表格sheet数据不能超过" + sheet.getEndRow() + "条"+"\n");
+
             }
             excelCounts += (hssfsheet.getLastRowNum() - sheet.getBeginRow() + 1);
             try {
@@ -134,15 +119,12 @@ public class ExcelUtils {
 
                         Message msg = RuleEngine.process(cellText, coumnRules_Map.get(key));
                         if (!msg.isSuccess()) {
-                            log.error("第" + (rowNum + 1) + "行:" + msg.getMsg());
-                            excelRight = false;
-                        }
-                        b = new BigDecimal(rowNum - 1).setScale(4, RoundingMode.HALF_UP)
-                                .divide(new BigDecimal(hssfsheet.getLastRowNum()), 4, RoundingMode.HALF_UP);
+                            result.setSuccess(false);
+                            result.getErrorMsg().append("第" + (rowNum + 1) + "行:" + msg.getMsg()+"\n");
 
-                        fileLabel.setText("excel校验中," + "sheet" + sheet.getSheetIndex() + ",进度:"
-                                + new BigDecimal(b.doubleValue() * 100).setScale(2, RoundingMode.HALF_UP) + "%");
-                    }
+                        }
+
+                       }
                     count++;
                     for (UniqueKey uniqueRule : uniqueKeys) {
                         List<Integer> keyRows = uniqueRule.getUniqueColumn();
@@ -164,8 +146,9 @@ public class ExcelUtils {
 
                         if (!CommonUtil.isNull(keyString)) {
                             if (countIdt.containsKey(keyString)) {
-                                log.error("第" + (rowNum + 1) + "行:" + "唯一性约束不通过，" + keyString + "表格内已存在");
-                                excelRight = false;
+                                result.setSuccess(false);
+                                result.getErrorMsg().append("第" + (rowNum + 1) + "行:" + "唯一性约束不通过，" + keyString + "表格内已存在"+"\n");
+
                             } else {
                                 countIdt.put(keyString, new Integer(1));
                             }
@@ -175,9 +158,7 @@ public class ExcelUtils {
 
                 }
             } catch (Exception e) {
-                log.error(e.toString());
-                e.printStackTrace();
-                excelRight = false;
+                throw new ValidateXmlException(e.toString());
             } finally {
                 if (is != null)
                     try {
@@ -189,24 +170,27 @@ public class ExcelUtils {
             }
 
         }
-        log.error("RESULT:" + String.valueOf(excelRight) + " TOTAL:" + String.valueOf(excelCounts) + " SCANED:"
-                + String.valueOf(count));
-        if (count == excelCounts && excelRight && count != 0)
-            excelRight = true;
+        result.getErrorMsg().append( " TOTAL:" + String.valueOf(excelCounts) + " SCANED:"
+                + String.valueOf(count)+"\n");
+        if (count == excelCounts && result.getSuccess() && count != 0)
+            result.setSuccess(true);
         else {
-            excelRight = false;
-            message.setMsg("扫描失败，请查看日志文件修改excel");
+
+            result.setSuccess(false);
+            result.getErrorMsg().append("扫描失败，请查看日志文件修改excel"+"\n");
         }
 
-        message.setSuccess(excelRight);
-        return excelRight;
+        return result;
     }
 
-    public static Boolean readExcel_XLSX(String excelLocalPath, List<VSheet> rules, JTextArea fileLabel,
-            Message message, String excelType) {
+    public static ValidateResult readExcel_XLSX(InputStream is, List<VSheet> rules,String excelType) {
         Integer excelCounts = 0;
         int count = 0;
-        boolean excelRight = true;
+        ValidateResult result = new ValidateResult();
+        result.setSuccess(true);
+        StringBuilder msgs = new StringBuilder();
+        result.setErrorMsg(msgs);
+
         for (VSheet sheet : rules) {
             List<ValidateRule> coumnRules = sheet.getColumns();
             HashMap<Integer, ValidateRule> coumnRules_Map = new HashMap<Integer, ValidateRule>();
@@ -217,29 +201,12 @@ public class ExcelUtils {
                 coumnRules_Map.put(new Integer(columnRow.getColumnIndex()), columnRow);
             }
 
-            InputStream is = null;
-            BigDecimal b = BigDecimal.ZERO;
-            b.setScale(4);
-            try {
-                is = new FileInputStream(excelLocalPath);
-            } catch (FileNotFoundException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-                excelRight = false;
-                log.error("解析excel失败，未找到目标文件");
-                log.error(e);
-                throw new ValidateRuntimeException(e.toString());
-            }
             XSSFWorkbook hssfworkbook = null;
             try {
                 hssfworkbook = new XSSFWorkbook(is);
             } catch (IOException e) {
                 // TODO Auto-generated catch block
-                e.printStackTrace();
-                excelRight = false;
-                log.error("解析工作表失败");
-                log.error(e);
-                throw new ValidateRuntimeException(e.toString());
+                throw new ValidateRuntimeException("解析工作表失败"+e.toString());
             }
             XSSFSheet hssfsheet = hssfworkbook.getSheetAt(sheet.getSheetIndex());
             int rows = hssfsheet.getLastRowNum();
@@ -248,8 +215,9 @@ public class ExcelUtils {
 
             int endRow = sheet.getEndRow();
             if (sheet.getEndRow() != null && hssfsheet.getLastRowNum() > endRow) {
-                excelRight = false;
-                log.error("解析工作表失败:表格sheet数据不能超过" + sheet.getEndRow() + "条");
+                result.setSuccess(false);
+                result.getErrorMsg().append("解析工作表失败:表格sheet数据不能超过" + sheet.getEndRow() + "条"+"\n");
+
             }
             excelCounts += (hssfsheet.getLastRowNum() - sheet.getBeginRow() + 1);
             try {
@@ -268,15 +236,12 @@ public class ExcelUtils {
 
                         Message msg = RuleEngine.process(cellText, coumnRules_Map.get(key));
                         if (!msg.isSuccess()) {
-                            log.error("第" + (rowNum + 1) + "行:" + msg.getMsg());
-                            excelRight = false;
-                        }
-                        b = new BigDecimal(rowNum - 1).setScale(4, RoundingMode.HALF_UP)
-                                .divide(new BigDecimal(hssfsheet.getLastRowNum()), 4, RoundingMode.HALF_UP);
+                            result.setSuccess(false);
+                            result.getErrorMsg().append("第" + (rowNum + 1) + "行:" + msg.getMsg()+"\n");
 
-                        fileLabel.setText("excel校验中," + "sheet" + sheet.getSheetIndex() + ",进度:"
-                                + new BigDecimal(b.doubleValue() * 100).setScale(2, RoundingMode.HALF_UP) + "%");
-                    }
+                        }
+
+                       }
                     count++;
                     for (UniqueKey uniqueRule : uniqueKeys) {
                         List<Integer> keyRows = uniqueRule.getUniqueColumn();
@@ -295,11 +260,12 @@ public class ExcelUtils {
                             }
                             keyString += "--" + cellText;
                         }
-                        log.error(keyString);
+
                         if (!CommonUtil.isNull(keyString)) {
                             if (countIdt.containsKey(keyString)) {
-                                log.error("第" + (rowNum + 1) + "行:" + "唯一性约束不通过，" + keyString + "表格内已存在");
-                                excelRight = false;
+                                result.setSuccess(false);
+                                result.getErrorMsg().append("第" + (rowNum + 1) + "行:" + "唯一性约束不通过，" + keyString + "表格内已存在"+"\n");
+
                             } else {
                                 countIdt.put(keyString, new Integer(1));
                             }
@@ -309,9 +275,7 @@ public class ExcelUtils {
 
                 }
             } catch (Exception e) {
-                log.error(e.toString());
-                e.printStackTrace();
-                excelRight = false;
+                throw new ValidateXmlException(e.toString());
             } finally {
                 if (is != null)
                     try {
@@ -323,17 +287,17 @@ public class ExcelUtils {
             }
 
         }
-        log.error("RESULT:" + String.valueOf(excelRight) + " TOTAL:" + String.valueOf(excelCounts) + " SCANED:"
-                + String.valueOf(count));
-        if (count == excelCounts && excelRight && count != 0)
-            excelRight = true;
+        result.getErrorMsg().append( " TOTAL:" + String.valueOf(excelCounts) + " SCANED:"
+                + String.valueOf(count)+"\n");
+        if (count == excelCounts && result.getSuccess() && count != 0)
+            result.setSuccess(true);
         else {
-            excelRight = false;
-            message.setMsg("扫描失败，请查看日志文件修改excel");
+
+            result.setSuccess(false);
+            result.getErrorMsg().append("扫描失败，请查看日志文件修改excel"+"\n");
         }
 
-        message.setSuccess(excelRight);
-        return excelRight;
+        return result;
     }
 
 }

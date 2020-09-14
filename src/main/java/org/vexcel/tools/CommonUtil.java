@@ -16,10 +16,5 @@ public class CommonUtil {
             return false;
     }
 
-    public static void setSysClipboardText(String writeMe) {
-        Clipboard clip = Toolkit.getDefaultToolkit().getSystemClipboard();
-        Transferable tText = new StringSelection(writeMe);
-        clip.setContents(tText, null);
-    }
 
 }
