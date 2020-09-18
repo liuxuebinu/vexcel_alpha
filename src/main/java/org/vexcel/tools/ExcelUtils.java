@@ -18,6 +18,7 @@ import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -48,6 +49,31 @@ public class ExcelUtils {
         default:
             celltext = "";
             break;
+        }
+
+        return celltext;
+
+    }
+
+    private static String getXssCellText(org.apache.poi.ss.usermodel.Cell cell) {
+        String celltext = "";
+
+        switch (cell.getCellType()) {
+            case XSSFCell.CELL_TYPE_NUMERIC:
+                celltext = "" + (int) cell.getNumericCellValue();
+                break;
+            case XSSFCell.CELL_TYPE_STRING:
+                celltext = cell.getStringCellValue();
+                break;
+            case XSSFCell.CELL_TYPE_BLANK:
+                celltext = "";
+                break;
+            case XSSFCell.CELL_TYPE_ERROR:
+                celltext = "";
+                break;
+            default:
+                celltext = "";
+                break;
         }
 
         return celltext;
@@ -88,8 +114,9 @@ public class ExcelUtils {
                 hssfworkbook = new HSSFWorkbook(is);
             } catch (IOException e) {
                 // TODO Auto-generated catch block
+                e.printStackTrace();
                 result.setSuccess(false);
-                throw new ValidateRuntimeException(e.toString());
+                throw new ValidateRuntimeException(CommonUtil.getStackTrace(e));
             }
             HSSFSheet hssfsheet = hssfworkbook.getSheetAt(sheet.getSheetIndex());
             int rows = hssfsheet.getLastRowNum();
@@ -99,7 +126,7 @@ public class ExcelUtils {
             int endRow = sheet.getEndRow();
             if (sheet.getEndRow() != null && hssfsheet.getLastRowNum() > endRow) {
                 result.setSuccess(false);
-                result.getErrorMsg().append("解析工作表失败:表格sheet数据不能超过" + sheet.getEndRow() + "条"+"\n");
+                result.getErrorMsg().append("解析工作表失败:表格sheet数据不能超过" + sheet.getEndRow() + "条"+"");
 
             }
             excelCounts += (hssfsheet.getLastRowNum() - sheet.getBeginRow() + 1);
@@ -120,7 +147,7 @@ public class ExcelUtils {
                         Message msg = RuleEngine.process(cellText, coumnRules_Map.get(key));
                         if (!msg.isSuccess()) {
                             result.setSuccess(false);
-                            result.getErrorMsg().append("第" + (rowNum + 1) + "行:" + msg.getMsg()+"\n");
+                            result.getErrorMsg().append("第" + (rowNum + 1) + "行:" + msg.getMsg()+"");
 
                         }
 
@@ -147,7 +174,7 @@ public class ExcelUtils {
                         if (!CommonUtil.isNull(keyString)) {
                             if (countIdt.containsKey(keyString)) {
                                 result.setSuccess(false);
-                                result.getErrorMsg().append("第" + (rowNum + 1) + "行:" + "唯一性约束不通过，" + keyString + "表格内已存在"+"\n");
+                                result.getErrorMsg().append("第" + (rowNum + 1) + "行:" + "唯一性约束不通过，" + keyString + "表格内已存在"+"");
 
                             } else {
                                 countIdt.put(keyString, new Integer(1));
@@ -158,26 +185,25 @@ public class ExcelUtils {
 
                 }
             } catch (Exception e) {
-                throw new ValidateXmlException(e.toString());
+                e.printStackTrace();
+                throw new ValidateXmlException(CommonUtil.getStackTrace(e));
             } finally {
                 if (is != null)
                     try {
                         is.close();
                     } catch (IOException e) {
                         // TODO Auto-generated catch block
-                        e.printStackTrace();
+                        throw new ValidateXmlException(CommonUtil.getStackTrace(e));
                     }
             }
 
         }
-        result.getErrorMsg().append( " TOTAL:" + String.valueOf(excelCounts) + " SCANED:"
-                + String.valueOf(count)+"\n");
         if (count == excelCounts && result.getSuccess() && count != 0)
             result.setSuccess(true);
         else {
 
             result.setSuccess(false);
-            result.getErrorMsg().append("扫描失败，请查看日志文件修改excel"+"\n");
+
         }
 
         return result;
@@ -206,6 +232,7 @@ public class ExcelUtils {
                 hssfworkbook = new XSSFWorkbook(is);
             } catch (IOException e) {
                 // TODO Auto-generated catch block
+                e.printStackTrace();
                 throw new ValidateRuntimeException("解析工作表失败"+e.toString());
             }
             XSSFSheet hssfsheet = hssfworkbook.getSheetAt(sheet.getSheetIndex());
@@ -216,7 +243,7 @@ public class ExcelUtils {
             int endRow = sheet.getEndRow();
             if (sheet.getEndRow() != null && hssfsheet.getLastRowNum() > endRow) {
                 result.setSuccess(false);
-                result.getErrorMsg().append("解析工作表失败:表格sheet数据不能超过" + sheet.getEndRow() + "条"+"\n");
+                result.getErrorMsg().append("解析工作表失败:表格sheet数据不能超过" + sheet.getEndRow() + "条"+"");
 
             }
             excelCounts += (hssfsheet.getLastRowNum() - sheet.getBeginRow() + 1);
@@ -232,12 +259,12 @@ public class ExcelUtils {
                             hssfRow.getCell((Integer) key).setCellValue("");
                         }
                         Cell cell = hssfRow.getCell((Integer) key);
-                        String cellText = getCellText(cell);
+                        String cellText = getXssCellText(cell);
 
                         Message msg = RuleEngine.process(cellText, coumnRules_Map.get(key));
                         if (!msg.isSuccess()) {
                             result.setSuccess(false);
-                            result.getErrorMsg().append("第" + (rowNum + 1) + "行:" + msg.getMsg()+"\n");
+                            result.getErrorMsg().append("第" + (rowNum + 1) + "行:" + msg.getMsg()+"");
 
                         }
 
@@ -253,7 +280,7 @@ public class ExcelUtils {
                                 hssfRow.getCell((Integer) key).setCellValue("");
                             }
                             Cell cell = hssfRow.getCell((Integer) key);
-                            String cellText = getCellText(cell);
+                            String cellText = getXssCellText(cell);
                             if (CommonUtil.isNull(cellText)) {
                                 keyString = "";
                                 break;
@@ -264,7 +291,7 @@ public class ExcelUtils {
                         if (!CommonUtil.isNull(keyString)) {
                             if (countIdt.containsKey(keyString)) {
                                 result.setSuccess(false);
-                                result.getErrorMsg().append("第" + (rowNum + 1) + "行:" + "唯一性约束不通过，" + keyString + "表格内已存在"+"\n");
+                                result.getErrorMsg().append("第" + (rowNum + 1) + "行:" + "唯一性约束不通过，" + keyString + "表格内已存在"+"");
 
                             } else {
                                 countIdt.put(keyString, new Integer(1));
@@ -275,26 +302,26 @@ public class ExcelUtils {
 
                 }
             } catch (Exception e) {
-                throw new ValidateXmlException(e.toString());
+                e.printStackTrace();
+                throw new ValidateXmlException(CommonUtil.getStackTrace(e));
             } finally {
                 if (is != null)
                     try {
                         is.close();
                     } catch (IOException e) {
-                        // TODO Auto-generated catch block
                         e.printStackTrace();
+                        // TODO Auto-generated catch block
+                        throw new ValidateXmlException(CommonUtil.getStackTrace(e));
                     }
             }
 
         }
-        result.getErrorMsg().append( " TOTAL:" + String.valueOf(excelCounts) + " SCANED:"
-                + String.valueOf(count)+"\n");
+
         if (count == excelCounts && result.getSuccess() && count != 0)
             result.setSuccess(true);
         else {
 
             result.setSuccess(false);
-            result.getErrorMsg().append("扫描失败，请查看日志文件修改excel"+"\n");
         }
 
         return result;

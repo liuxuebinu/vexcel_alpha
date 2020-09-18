@@ -65,12 +65,19 @@ public class RuleMethods {
     public static Message regexRule(String excelCellString, ValidateRule rule) {
         Message msg = MessageFactory.getMessage();
         if (!isNull(excelCellString) && !isNull(rule.getRule())) {
-            if (!excelCellString.matches(new String(rule.getRule()))) {
-                System.out.println(rule.getRule());
-                System.out.println(excelCellString);
-                msg.setMsg("字符格式规则不通过," + "字段：" + "[" + rule.getName() + "]" + "数据格式错误" + "\n");
-                msg.setSuccess(false);
-            }
+           try {
+               if (!excelCellString.matches(new String(rule.getRule()))) {
+                   System.out.println(rule.getRule());
+                   System.out.println(excelCellString);
+                   msg.setMsg("字符格式规则不通过," + "字段：" + "[" + rule.getName() + "]" + "数据格式错误" + "\n");
+                   msg.setSuccess(false);
+               }
+           }catch(Exception e){
+               msg.setMsg("字符格式规则不通过," + "字段：" + "[" + rule.getName() + "]" + "数据格式错误" + "\n");
+               msg.setSuccess(false);
+               return msg;
+           }
+
         }
         return msg;
     }
@@ -105,7 +112,7 @@ public class RuleMethods {
                 Class.forName(rule.getClassType()).getConstructor(String.class).newInstance(excelCellString);
             } catch (Exception e) {
                 // TODO Auto-generated catch block
-                e.printStackTrace();
+               // e.printStackTrace();
                 msg.setMsg("字符类型规则不通过," + "字段：" + "[" + rule.getName() + "]" + "数据格式错误" + "\n");
                 msg.setSuccess(false);
             }
@@ -124,7 +131,7 @@ public class RuleMethods {
                 sf.parse(excelCellString);
             } catch (Exception e) {
                 // TODO Auto-generated catch block
-                e.printStackTrace();
+               // e.printStackTrace();
                 msg.setMsg("日期格式规则不通过," + "字段：" + "[" + rule.getName() + "]" + "数据格式错误" + "\n");
                 msg.setSuccess(false);
             }
@@ -212,7 +219,7 @@ public class RuleMethods {
 
     public static Message specialCharRule(String excelCellString, ValidateRule rule) {
         Message msg = MessageFactory.getMessage();
-        if (!isNull(excelCellString)) {
+        if (!isNull(excelCellString)&&!isNull(rule.getIsFilterSpecChar())&&rule.getIsFilterSpecChar()) {
             String regEx = "[ _`~!@#$%^&*()+=|{}':;',\\[\\].<>/?~！@#￥%……&*（）——+|{}【】‘；：”“’。，、？]|\n|\r|\t|\\s";
             Pattern p = Pattern.compile(regEx);
             Matcher m = p.matcher(excelCellString);

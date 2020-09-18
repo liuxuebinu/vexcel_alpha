@@ -1,23 +1,42 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org</groupId>
-  <artifactId>vexcel</artifactId>
-  <version>server-1.10</version>
-   <properties>
-        <!-- 项目配置文件目录 -->
+  <groupId>com.github.liuxuebinu</groupId>
+  <artifactId>vexcel-server</artifactId>
+  <version>1.10</version>
+   <!-- <packaging>pom</packaging>-->
+    <name>vexcel_alpha_server_version</name>
+    <url>https://github.com/liuxuebinu/vexcel_alpha</url>
+    <description>validation excel automatically</description>
+    <licenses>
+        <license>
+            <name>Server Side Public License</name>
+            <url>https://www.mongodb.com/licensing/server-side-public-license</url>
+            <distribution>repo</distribution>
+            <comments>A not business-friendly OSS license</comments>
+        </license>
+    </licenses>
+    <scm>
+        <url>https://github.com/liuxuebinu/vexcel_alpha</url>
+        <connection> https://github.com/liuxuebinu/vexcel_alpha.git</connection>
+    </scm>
+    <developers>
+        <developer>
+            <name>xuebin</name>
+            <id>xuebin</id>
+            <email>350685639@qq.com</email>
+            <roles>
+                <role>Developer</role>
+            </roles>
+            <timezone>+8</timezone>
+        </developer>
+    </developers>
+  <properties>
         <project.config.directory>src/main/resources</project.config.directory>
-        <!-- 项目编码 -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
-        <!-- 本地编译JDK版本 -->
         <maven.compiler.source>1.8</maven.compiler.source>
-        <!-- 项目部署JDK版本 -->
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
-
-  
  <dependencies>
- <!-- https://mvnrepository.com/artifact/org.apache.poi/poi -->
 <dependency>
 	<groupId>org.apache.poi</groupId> 
     <artifactId>poi-ooxml</artifactId>
@@ -44,41 +63,81 @@
 </dependency>
 
  </dependencies>
-    <build>
-      <resources>    
-            <resource>    
-                <!-- 设定主资源目录  -->    
-                <directory>src/main/resources</directory>    
- 
-                <!-- maven default生命周期，process-resources阶段执行maven-resources-plugin插件的resources目标处理主资源目下的资源文件时，只处理如下配置中包含的资源类型 -->     
-				 <includes>
-					  <include>**/*</include>
-				 </includes>  
 
-                <!-- maven default生命周期，process-resources阶段执行maven-resources-plugin插件的resources目标处理主资源目下的资源文件时，指定处理后的资源文件输出目录，默认是${build.outputDirectory}指定的目录-->      
-                <targetPath>resources</targetPath>     
-   
-                <!-- maven default生命周期，process-resources阶段执行maven-resources-plugin插件的resources目标处理主资源目下的资源文件时，是否对主资源目录开启资源过滤 -->    
-                <filtering>true</filtering>     
-            </resource>  			
-        </resources> 
+ <profiles>
+    <profile>
+           <id>default</id>
+           <activation>
+                <activeByDefault>true</activeByDefault>
+           </activation>
+    <build>
 
     <plugins>
-  <plugin>
-    <groupId>org.apache.maven.plugins</groupId>
-    <artifactId>maven-jar-plugin</artifactId>
-    <version>2.4</version>
-    <!-- 对要打的jar包进行配置 -->
-    <configuration>
-        <!-- Configuration of the archiver -->
-        <archive>
-            <!--生成的jar中，不要包含pom.xml和pom.properties这两个文件-->
-            <addMavenDescriptor>false</addMavenDescriptor>
+     <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+           <artifactId>maven-jar-plugin</artifactId>
+           <version>2.4</version>
+             <configuration>
+               <archive>
+                <addMavenDescriptor>false</addMavenDescriptor>
+               </archive>
+           </configuration>
+       </plugin>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>2.2.1</version>
+            <executions>
+                <execution>
+                    <phase>package</phase>
+                    <goals>
+                        <goal>jar-no-fork</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>2.9.1</version>
+            <executions>
+                <execution>
+                    <phase>package</phase>
+                    <goals>
+                        <goal>jar</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
 
-        </archive>
-    </configuration>
-</plugin>
+       <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>1.6</version>
+            <executions>
+                <execution>
+                    <phase>verify</phase>
+                    <goals>
+                        <goal>sign</goal>
+                    </goals>
+                </execution>
+            </executions>
+    </plugin>
 
 </plugins>
 </build>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
+   </profile>
+</profiles>
+
  </project>

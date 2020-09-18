@@ -68,8 +68,7 @@ public class XmlUtils {
             return jsheets;
         } catch (DocumentException e) {
             // TODO Auto-generated catch block
-            e.printStackTrace();
-            throw new ValidateXmlException("读取xml配置失败");
+            throw new ValidateXmlException("读取xml配置失败"+CommonUtil.getStackTrace(e));
         } finally {
             if (inStream != null) {
                 try {
@@ -100,7 +99,7 @@ public class XmlUtils {
                 }
             }
         }catch (Exception e){
-            throw new ValidateXmlException("读取xml配置失败");
+            throw new ValidateXmlException("读取xml配置失败"+CommonUtil.getStackTrace(e));
         }
         return type ;
 
