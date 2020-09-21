@@ -212,7 +212,7 @@ public class RuleMethods {
 
     public static Message specialCharRule(String excelCellString, ValidateRule rule) {
         Message msg = MessageFactory.getMessage();
-        if (!isNull(excelCellString)) {
+        if (!isNull(excelCellString)&&!isNull(rule.getIsFilterSpecChar())&&rule.getIsFilterSpecChar()) {
             String regEx = "[ _`~!@#$%^&*()+=|{}':;',\\[\\].<>/?~！@#￥%……&*（）——+|{}【】‘；：”“’。，、？]|\n|\r|\t|\\s";
             Pattern p = Pattern.compile(regEx);
             Matcher m = p.matcher(excelCellString);

@@ -123,6 +123,9 @@ public class ExcelUtils {
                 for (int rowNum = sheet.getBeginRow(); rowNum <= hssfsheet.getLastRowNum(); rowNum++) {
 
                     HSSFRow hssfRow = hssfsheet.getRow(rowNum);
+                    if(hssfRow==null){
+                        continue;
+                    }
                     for (Object key : rowKeys) {
                         if (hssfRow.getCell((Integer) key) == null) {
                             hssfRow.createCell((Integer) key);
@@ -230,9 +233,9 @@ public class ExcelUtils {
                 log.error(e);
                 throw new ValidateRuntimeException(e.toString());
             }
-            XSSFWorkbook hssfworkbook = null;
+            XSSFWorkbook xssfworkbook = null;
             try {
-                hssfworkbook = new XSSFWorkbook(is);
+                xssfworkbook = new XSSFWorkbook(is);
             } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -241,29 +244,31 @@ public class ExcelUtils {
                 log.error(e);
                 throw new ValidateRuntimeException(e.toString());
             }
-            XSSFSheet hssfsheet = hssfworkbook.getSheetAt(sheet.getSheetIndex());
-            int rows = hssfsheet.getLastRowNum();
+            XSSFSheet xssfsheet = xssfworkbook.getSheetAt(sheet.getSheetIndex());
+            int rows = xssfsheet.getLastRowNum();
 
             HashMap<String, Integer> countIdt = new HashMap(rows * uniqueKeys.size() + 10, 1F);
 
             int endRow = sheet.getEndRow();
-            if (sheet.getEndRow() != null && hssfsheet.getLastRowNum() > endRow) {
+            if (sheet.getEndRow() != null && xssfsheet.getLastRowNum() > endRow) {
                 excelRight = false;
                 log.error("解析工作表失败:表格sheet数据不能超过" + sheet.getEndRow() + "条");
             }
-            excelCounts += (hssfsheet.getLastRowNum() - sheet.getBeginRow() + 1);
+            excelCounts += (xssfsheet.getLastRowNum() - sheet.getBeginRow() + 1);
             try {
 
-                for (int rowNum = sheet.getBeginRow(); rowNum <= hssfsheet.getLastRowNum(); rowNum++) {
-                    XSSFRow hssfRow = hssfsheet.getRow(rowNum);
-
+                for (int rowNum = sheet.getBeginRow(); rowNum <= xssfsheet.getLastRowNum(); rowNum++) {
+                    XSSFRow xssfRow = xssfsheet.getRow(rowNum);
+                    if(xssfRow==null){
+                        continue;
+                    }
                     for (Object key : rowKeys) {
-                        if (hssfRow.getCell((Integer) key) == null) {
-                            hssfRow.createCell((Integer) key);
-                            hssfRow.getCell((Integer) key).setCellType(Cell.CELL_TYPE_STRING);
-                            hssfRow.getCell((Integer) key).setCellValue("");
+                        if (xssfRow.getCell((Integer) key) == null) {
+                            xssfRow.createCell((Integer) key);
+                            xssfRow.getCell((Integer) key).setCellType(Cell.CELL_TYPE_STRING);
+                            xssfRow.getCell((Integer) key).setCellValue("");
                         }
-                        Cell cell = hssfRow.getCell((Integer) key);
+                        Cell cell = xssfRow.getCell((Integer) key);
                         String cellText = getCellText(cell);
 
                         Message msg = RuleEngine.process(cellText, coumnRules_Map.get(key));
@@ -272,7 +277,7 @@ public class ExcelUtils {
                             excelRight = false;
                         }
                         b = new BigDecimal(rowNum - 1).setScale(4, RoundingMode.HALF_UP)
-                                .divide(new BigDecimal(hssfsheet.getLastRowNum()), 4, RoundingMode.HALF_UP);
+                                .divide(new BigDecimal(xssfsheet.getLastRowNum()), 4, RoundingMode.HALF_UP);
 
                         fileLabel.setText("excel校验中," + "sheet" + sheet.getSheetIndex() + ",进度:"
                                 + new BigDecimal(b.doubleValue() * 100).setScale(2, RoundingMode.HALF_UP) + "%");
@@ -282,12 +287,12 @@ public class ExcelUtils {
                         List<Integer> keyRows = uniqueRule.getUniqueColumn();
                         String keyString = uniqueRule.getKeyName();
                         for (Integer key : keyRows) {
-                            if (hssfRow.getCell((Integer) key) == null) {
-                                hssfRow.createCell((Integer) key);
-                                hssfRow.getCell((Integer) key).setCellType(Cell.CELL_TYPE_STRING);
-                                hssfRow.getCell((Integer) key).setCellValue("");
+                            if (xssfRow.getCell((Integer) key) == null) {
+                                xssfRow.createCell((Integer) key);
+                                xssfRow.getCell((Integer) key).setCellType(Cell.CELL_TYPE_STRING);
+                                xssfRow.getCell((Integer) key).setCellValue("");
                             }
-                            Cell cell = hssfRow.getCell((Integer) key);
+                            Cell cell = xssfRow.getCell((Integer) key);
                             String cellText = getCellText(cell);
                             if (CommonUtil.isNull(cellText)) {
                                 keyString = "";
