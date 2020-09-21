@@ -11,10 +11,7 @@ import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import org.vexcel.exception.ValidateXmlException;
-import org.vexcel.pojo.ExcelConfig;
-import org.vexcel.pojo.UniqueKey;
-import org.vexcel.pojo.VSheet;
-import org.vexcel.pojo.ValidateRule;
+import org.vexcel.pojo.*;
 
 public class XmlUtils {
 
@@ -28,8 +25,8 @@ public class XmlUtils {
             return false;
     }
 
-    @SuppressWarnings("unchecked")
-    public List<VSheet> getRuleByName( String validatorName) {
+    @Deprecated
+    private List<VSheet> getRuleByName( String validatorName) {
         InputStream inStream = this.getClass().getResourceAsStream("/excelValidation.xml");
         SAXReader reader = new SAXReader();
         Document document = null;
@@ -45,27 +42,7 @@ public class XmlUtils {
                     break;
                 }
             }
-            List<Element> sheets = validateElement.elements("sheet");
-
-            if (sheets != null && !sheets.isEmpty()) {
-                for (Element sheetElement : sheets) {
-                    VSheet jsheet = new VSheet();
-                    String sheetIndex = sheetElement.attributeValue("sheetIndex");
-                    String beginRow = sheetElement.attributeValue("beginRow");
-                    String endRow = sheetElement.attributeValue("endRow");
-                    if (isNull(sheetIndex))
-                        throw new ValidateXmlException("校验文件sheetIndex属性不能为空");
-                    if (isNull(beginRow))
-                        throw new ValidateXmlException("校验文件beginRow属性不能为空");
-                    jsheet.setBeginRow(isNull(beginRow) ? null : new Integer(beginRow));
-                    jsheet.setEndRow(isNull(endRow) ? null : new Integer(endRow));
-                    jsheet.setSheetIndex(isNull(sheetIndex) ? null : new Integer(sheetIndex));
-                    jsheet.setColumns(this.getCoulumnRules(sheetElement));
-                    jsheet.setUniqueKeys(this.getUniqueKeys(sheetElement));
-                    jsheets.add(jsheet);
-                }
-            }
-            return jsheets;
+             return jsheets;
         } catch (DocumentException e) {
             // TODO Auto-generated catch block
             throw new ValidateXmlException("读取xml配置失败"+CommonUtil.getStackTrace(e));
@@ -83,27 +60,6 @@ public class XmlUtils {
 
     }
 
-    public String getTypeById( String validatorId) {
-        InputStream inStream = this.getClass().getResourceAsStream("/excelValidation.xml");
-        SAXReader reader = new SAXReader();
-        Document document = null;
-        String type = "";
-        try {
-            document = reader.read(inStream);
-            Element rootE = document.getRootElement();
-            List<Element> validators = rootE.elements("validator");
-            Element validateElement = null;
-            for (Element e1 : validators) {
-                if (validatorId.equals(e1.attributeValue("id"))) {
-                    type= e1.attributeValue("id");
-                }
-            }
-        }catch (Exception e){
-            throw new ValidateXmlException("读取xml配置失败"+CommonUtil.getStackTrace(e));
-        }
-        return type ;
-
-    }
 
     private List<UniqueKey> getUniqueKeys(Element sheetElement) {
         Element uniqueKeys = sheetElement.element("uniqueKeys");
@@ -189,37 +145,61 @@ public class XmlUtils {
         }
         return columnRules;
     }
-/*
+
+    private List<VSheet>  getSheetRules(Element validateElement){
+        List<Element> sheets = validateElement.elements("sheet");
+        List<VSheet> jsheets = new ArrayList<>();
+        if (sheets != null && !sheets.isEmpty()) {
+            for (Element sheetElement : sheets) {
+                VSheet jsheet = new VSheet();
+                String sheetIndex = sheetElement.attributeValue("sheetIndex");
+                String beginRow = sheetElement.attributeValue("beginRow");
+                String endRow = sheetElement.attributeValue("endRow");
+                if (isNull(sheetIndex))
+                    throw new ValidateXmlException("校验文件sheetIndex属性不能为空");
+                if (isNull(beginRow))
+                    throw new ValidateXmlException("校验文件beginRow属性不能为空");
+                jsheet.setBeginRow(isNull(beginRow) ? null : new Integer(beginRow));
+                jsheet.setEndRow(isNull(endRow) ? null : new Integer(endRow));
+                jsheet.setSheetIndex(isNull(sheetIndex) ? null : new Integer(sheetIndex));
+                jsheet.setColumns(this.getCoulumnRules(sheetElement));
+                jsheet.setUniqueKeys(this.getUniqueKeys(sheetElement));
+                jsheets.add(jsheet);
+            }
+        }
+        return jsheets;
+    }
+
     public HashMap<String, ExcelConfig> getAllValidators() {
         InputStream inStream = null;
-        String[] paths = { xmlPathOutJar };
         HashMap<String, ExcelConfig> excelConfigs = new HashMap<String, ExcelConfig>();
-        int count = 0;
-        for (String xmlPath : paths) {
-        	count++;
-            try {
-            	if (count==1)
-            		inStream = this.getClass().getResourceAsStream(xmlPath);
-            	else
-            		inStream = new FileInputStream(new File(xmlPath));
-                SAXReader reader = new SAXReader();
-                Document document = null;
+        try {
+            inStream  = this.getClass().getResourceAsStream("/excelValidation.xml");
+            SAXReader reader = new SAXReader();
+            Document document = null;
                 document = reader.read(inStream);
                 Element rootE = document.getRootElement();
                 List<Element> validators = rootE.elements("validator");
                 for (Element e1 : validators) {
                     ExcelConfig config = new ExcelConfig();
-                    config.setValidatorName(e1.attributeValue("id"));
+                    config.setValidatorId(e1.attributeValue("id"));
                     config.setExcelType(e1.attributeValue("type"));
-                    config.setXmlPath(xmlPath);
+                    config.setXmlPath("/resource/excelValidation.xml");
+                    List<VSheet> sheets = getSheetRules(e1);
+                    config.setSheets(sheets);
+                    if(excelConfigs.containsKey(e1.attributeValue("id"))){
+                        throw new ValidateXmlException("校验文件id重复");
+                    }
                     excelConfigs.put(e1.attributeValue("id"), config);
-                    // validatorAndPath.put(e1.attributeValue("type"), xmlPath);
+
                 }
-            } catch (Exception e) {
+            }catch(ValidateXmlException e){
+                throw e ;
+            }
+            catch (Exception e) {
             	StringWriter a = new StringWriter();
             	e.printStackTrace(new PrintWriter(a));
-            //	ExcelUtils.log.error(a.toString());
-                continue;
+                throw new ValidateXmlException("读取xml配置失败");
             } finally {
                 if (inStream != null)
                     try {
@@ -229,9 +209,9 @@ public class XmlUtils {
                         e.printStackTrace();
                     }
             }
-        }
+
         return excelConfigs;
 
     }
-*/
+
 }

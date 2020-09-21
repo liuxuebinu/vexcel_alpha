@@ -1,9 +1,12 @@
 package org.vexcel.pojo;
 
+import java.util.List;
+
 public class ExcelConfig {
     private String xmlPath;
     private String excelType;
-    private String validatorName;
+    private String validatorId;
+    private List<VSheet> sheets ;
 
     public String getXmlPath() {
         return xmlPath;
@@ -21,12 +24,19 @@ public class ExcelConfig {
         this.excelType = excelType;
     }
 
-    public String getValidatorName() {
-        return validatorName;
+    public String getValidatorId() {
+        return validatorId;
     }
 
-    public void setValidatorName(String validatorName) {
-        this.validatorName = validatorName;
+    public void setValidatorId(String validatorId) {
+        this.validatorId = validatorId;
     }
 
+    public List<VSheet> getSheets() {
+        return sheets;
+    }
+
+    public void setSheets(List<VSheet> sheets) {
+        this.sheets = sheets;
+    }
 }
