@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,12 +30,13 @@ import org.vexcel.pojo.*;
 
 public class ExcelUtils {
 
+
     private static String getCellText(org.apache.poi.ss.usermodel.Cell cell) {
         String celltext = "";
 
         switch (cell.getCellType()) {
         case HSSFCell.CELL_TYPE_NUMERIC:
-            celltext = "" + (int) cell.getNumericCellValue();
+            celltext = "" + cell.getNumericCellValue();
             break;
         case HSSFCell.CELL_TYPE_STRING:
             celltext = cell.getStringCellValue();
@@ -55,12 +57,43 @@ public class ExcelUtils {
 
     }
 
+
+    private static boolean  checkHSSFRowIsEmpty(HSSFRow hssfRow){
+        List<String> rowCells = new ArrayList<>();
+        java.util.Iterator<org.apache.poi.ss.usermodel.Cell> cellIt = hssfRow.cellIterator();
+        while(cellIt.hasNext()){
+            Cell cell = cellIt.next();
+            if(cell !=null){
+                String cellText = getCellText(cell);
+                if(!CommonUtil.isNull(cellText)){
+                    rowCells.add(cellText);
+                }
+            }
+        }
+        return (rowCells.size()<=0);
+    }
+
+    private static boolean  checkXSSFRowIsEmpty(XSSFRow xssfRow){
+
+        List<String> rowCells = new ArrayList<>();
+        java.util.Iterator<org.apache.poi.ss.usermodel.Cell> cellIt = xssfRow.cellIterator();
+        while(cellIt.hasNext()){
+            Cell cell = cellIt.next();
+            if(cell !=null){
+                String cellText = getXssCellText(cell);
+                if(!CommonUtil.isNull(cellText)){
+                    rowCells.add(cellText);
+                }
+            }
+        }
+        return (rowCells.size()<=0);
+    }
+
     private static String getXssCellText(org.apache.poi.ss.usermodel.Cell cell) {
         String celltext = "";
-
         switch (cell.getCellType()) {
             case XSSFCell.CELL_TYPE_NUMERIC:
-                celltext = "" + (int) cell.getNumericCellValue();
+                celltext = "" + cell.getNumericCellValue();
                 break;
             case XSSFCell.CELL_TYPE_STRING:
                 celltext = cell.getStringCellValue();
@@ -135,9 +168,14 @@ public class ExcelUtils {
                 for (int rowNum = sheet.getBeginRow(); rowNum <= hssfsheet.getLastRowNum(); rowNum++) {
 
                     HSSFRow hssfRow = hssfsheet.getRow(rowNum);
-                    if(hssfRow==null){
+                     if(hssfRow==null){
                         continue;
                     }
+                    Boolean empty =  checkHSSFRowIsEmpty(hssfRow);
+                     if(empty){
+                         continue;
+                     }
+
                     for (Object key : rowKeys) {
                         if (hssfRow.getCell((Integer) key) == null) {
                             hssfRow.createCell((Integer) key);
@@ -255,6 +293,10 @@ public class ExcelUtils {
                 for (int rowNum = sheet.getBeginRow(); rowNum <= xssfsheet.getLastRowNum(); rowNum++) {
                     XSSFRow xssfRow = xssfsheet.getRow(rowNum);
                     if(xssfRow==null){
+                        continue;
+                    }
+                    Boolean empty =  checkXSSFRowIsEmpty(xssfRow);
+                    if(empty){
                         continue;
                     }
                     for (Object key : rowKeys) {
