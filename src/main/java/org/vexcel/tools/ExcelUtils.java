@@ -1,19 +1,9 @@
 package org.vexcel.tools;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.text.DecimalFormat;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
-import javax.swing.JTextArea;
-
-import org.apache.log4j.Logger;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
@@ -33,28 +23,14 @@ public class ExcelUtils {
 
     private static String getCellText(org.apache.poi.ss.usermodel.Cell cell) {
         String celltext = "";
-
-        switch (cell.getCellType()) {
-        case HSSFCell.CELL_TYPE_NUMERIC:
-            celltext = "" + cell.getNumericCellValue();
-            break;
-        case HSSFCell.CELL_TYPE_STRING:
+        if(cell != null) {
+            cell.setCellType(HSSFCell.CELL_TYPE_STRING);
             celltext = cell.getStringCellValue();
-            break;
-        case HSSFCell.CELL_TYPE_BLANK:
-            celltext = "";
-            break;
-        case HSSFCell.CELL_TYPE_ERROR:
-            celltext = "";
-            break;
-
-        default:
-            celltext = "";
-            break;
+            if(celltext == null){
+                celltext = "";
+            }
         }
-
         return celltext;
-
     }
 
 
@@ -67,6 +43,7 @@ public class ExcelUtils {
                 String cellText = getCellText(cell);
                 if(!CommonUtil.isNull(cellText)){
                     rowCells.add(cellText);
+                    return false;
                 }
             }
         }
@@ -83,6 +60,7 @@ public class ExcelUtils {
                 String cellText = getXssCellText(cell);
                 if(!CommonUtil.isNull(cellText)){
                     rowCells.add(cellText);
+                    return false;
                 }
             }
         }
@@ -91,24 +69,13 @@ public class ExcelUtils {
 
     private static String getXssCellText(org.apache.poi.ss.usermodel.Cell cell) {
         String celltext = "";
-        switch (cell.getCellType()) {
-            case XSSFCell.CELL_TYPE_NUMERIC:
-                celltext = "" + cell.getNumericCellValue();
-                break;
-            case XSSFCell.CELL_TYPE_STRING:
-                celltext = cell.getStringCellValue();
-                break;
-            case XSSFCell.CELL_TYPE_BLANK:
+        if(cell != null) {
+            cell.setCellType(XSSFCell.CELL_TYPE_STRING);
+            celltext = cell.getStringCellValue();
+            if(celltext == null){
                 celltext = "";
-                break;
-            case XSSFCell.CELL_TYPE_ERROR:
-                celltext = "";
-                break;
-            default:
-                celltext = "";
-                break;
+            }
         }
-
         return celltext;
 
     }
@@ -122,6 +89,8 @@ public class ExcelUtils {
         }
 
     }
+
+
 
     public static ValidateResult readExcel_XLS(InputStream is, List<VSheet> rules,
             String excelType) {
