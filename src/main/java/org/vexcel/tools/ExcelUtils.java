@@ -100,6 +100,17 @@ public class ExcelUtils {
         result.setSuccess(true);
         StringBuilder msgs = new StringBuilder();
         result.setErrorMsg(msgs);
+
+        HSSFWorkbook hssfworkbook = null;
+        try {
+            hssfworkbook = new HSSFWorkbook(is);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            result.setSuccess(false);
+            throw new ValidateRuntimeException(CommonUtil.getStackTrace(e));
+        }
+
         for (VSheet sheet : rules) {
             List<ValidateRule> coumnRules = sheet.getColumns();
             HashMap<Integer, ValidateRule> coumnRules_Map = new HashMap<Integer, ValidateRule>();
@@ -111,15 +122,7 @@ public class ExcelUtils {
             }
 
 
-            HSSFWorkbook hssfworkbook = null;
-            try {
-                hssfworkbook = new HSSFWorkbook(is);
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-                result.setSuccess(false);
-                throw new ValidateRuntimeException(CommonUtil.getStackTrace(e));
-            }
+
             HSSFSheet hssfsheet = hssfworkbook.getSheetAt(sheet.getSheetIndex());
             int rows = hssfsheet.getLastRowNum();
 
@@ -196,18 +199,13 @@ public class ExcelUtils {
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-                throw new ValidateXmlException(CommonUtil.getStackTrace(e));
-            } finally {
-                if (is != null)
-                    try {
-                        is.close();
-                    } catch (IOException e) {
-                        // TODO Auto-generated catch block
-                        throw new ValidateXmlException(CommonUtil.getStackTrace(e));
-                    }
+                closeInStream(is);
+               throw new ValidateXmlException(CommonUtil.getStackTrace(e));
             }
 
         }
+
+        closeInStream(is);
         if (count == excelCounts && result.getSuccess() && count != 0)
             result.setSuccess(true);
         else {
@@ -219,6 +217,17 @@ public class ExcelUtils {
         return result;
     }
 
+    private static void closeInStream(InputStream is){
+        if (is != null) {
+            try {
+                is.close();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                throw new ValidateXmlException(CommonUtil.getStackTrace(e));
+            }
+        }
+    }
+
     public static ValidateResult readExcel_XLSX(InputStream is, List<VSheet> rules,String excelType) {
         Integer excelCounts = 0;
         int count = 0;
@@ -226,6 +235,15 @@ public class ExcelUtils {
         result.setSuccess(true);
         StringBuilder msgs = new StringBuilder();
         result.setErrorMsg(msgs);
+
+        XSSFWorkbook xssfworkbook = null;
+        try {
+            xssfworkbook = new XSSFWorkbook(is);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            throw new ValidateRuntimeException("解析工作表失败"+e.toString());
+        }
 
         for (VSheet sheet : rules) {
             List<ValidateRule> coumnRules = sheet.getColumns();
@@ -237,14 +255,7 @@ public class ExcelUtils {
                 coumnRules_Map.put(new Integer(columnRow.getColumnIndex()), columnRow);
             }
 
-            XSSFWorkbook xssfworkbook = null;
-            try {
-                xssfworkbook = new XSSFWorkbook(is);
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-                throw new ValidateRuntimeException("解析工作表失败"+e.toString());
-            }
+
             XSSFSheet xssfsheet = xssfworkbook.getSheetAt(sheet.getSheetIndex());
             int rows = xssfsheet.getLastRowNum();
 
@@ -319,20 +330,13 @@ public class ExcelUtils {
                 }
             } catch (Exception e) {
                 e.printStackTrace();
+                closeInStream(is);
                 throw new ValidateXmlException(CommonUtil.getStackTrace(e));
-            } finally {
-                if (is != null)
-                    try {
-                        is.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        // TODO Auto-generated catch block
-                        throw new ValidateXmlException(CommonUtil.getStackTrace(e));
-                    }
             }
 
         }
 
+        closeInStream(is);
         if (count == excelCounts && result.getSuccess() && count != 0)
             result.setSuccess(true);
         else {
