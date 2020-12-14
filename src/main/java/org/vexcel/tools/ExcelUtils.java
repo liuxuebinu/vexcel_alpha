@@ -141,10 +141,12 @@ public class ExcelUtils {
 
                     HSSFRow hssfRow = hssfsheet.getRow(rowNum);
                      if(hssfRow==null){
+                         excelCounts--;
                         continue;
                     }
                     Boolean empty =  checkHSSFRowIsEmpty(hssfRow);
                      if(empty){
+                         excelCounts--;
                          continue;
                      }
 
@@ -165,7 +167,7 @@ public class ExcelUtils {
                         }
 
                        }
-                    count++;
+
                     for (UniqueKey uniqueRule : uniqueKeys) {
                         List<Integer> keyRows = uniqueRule.getUniqueColumn();
                         String keyString = uniqueRule.getKeyName();
@@ -195,7 +197,7 @@ public class ExcelUtils {
                         }
 
                     }
-
+                    count++;
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -206,7 +208,7 @@ public class ExcelUtils {
         }
 
         closeInStream(is);
-        if (count == excelCounts && result.getSuccess() && count != 0)
+        if (count == excelCounts.intValue()||result.getSuccess() && count != 0)
             result.setSuccess(true);
         else {
 
@@ -273,10 +275,12 @@ public class ExcelUtils {
                 for (int rowNum = sheet.getBeginRow(); rowNum <= xssfsheet.getLastRowNum(); rowNum++) {
                     XSSFRow xssfRow = xssfsheet.getRow(rowNum);
                     if(xssfRow==null){
+                        excelCounts--;
                         continue;
                     }
                     Boolean empty =  checkXSSFRowIsEmpty(xssfRow);
                     if(empty){
+                        excelCounts--;
                         continue;
                     }
                     for (Object key : rowKeys) {
@@ -296,7 +300,7 @@ public class ExcelUtils {
                         }
 
                        }
-                    count++;
+
                     for (UniqueKey uniqueRule : uniqueKeys) {
                         List<Integer> keyRows = uniqueRule.getUniqueColumn();
                         String keyString = uniqueRule.getKeyName();
@@ -326,7 +330,7 @@ public class ExcelUtils {
                         }
 
                     }
-
+                    count++;
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -337,7 +341,7 @@ public class ExcelUtils {
         }
 
         closeInStream(is);
-        if (count == excelCounts && result.getSuccess() && count != 0)
+        if ( count == excelCounts.intValue()&&result.getSuccess() && count != 0)
             result.setSuccess(true);
         else {
 
